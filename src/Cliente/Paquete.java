@@ -1,13 +1,25 @@
 
 package Cliente;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+
 /**
  *
  * @author admin-jean
  */
-public class Paquete {
+public class Paquete implements Serializable{
     
     private String nick, ip, msj;
+    private ArrayList <String> ipList;
+
+    public ArrayList<String> getIpList() {
+        return ipList;
+    }
+
+    public void setIpList(ArrayList<String> ipList) {
+        this.ipList = ipList;
+    }
 
     public String getNick() {
         return nick;
@@ -32,6 +44,5 @@ public class Paquete {
     public void setMsj(String msj) {
         this.msj = msj;
     }
-    
-    
+
 }

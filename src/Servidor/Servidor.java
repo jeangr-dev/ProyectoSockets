@@ -1,9 +1,13 @@
 package Servidor;
 
-import java.io.DataInputStream;
+import Cliente.Paquete;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  *
@@ -16,7 +20,7 @@ public class Servidor extends javax.swing.JFrame implements Runnable {
         configWindowServer();
         initThread();
     }
-    
+
     private void initThread() {
         Thread thread = new Thread(this);
         thread.start();
@@ -77,20 +81,60 @@ public class Servidor extends javax.swing.JFrame implements Runnable {
     private void listenConnection() {
         try {
             ServerSocket server = new ServerSocket(9999);
+            String nick, ip, msj;
+            Paquete packReceive;
             while (true) {
                 Socket mySocket = server.accept();
-                DataInputStream inputPack = new DataInputStream(mySocket.getInputStream());
-                String dataClient = inputPack.readUTF();
-                jTxtAreaMsjServer.append("\n" + dataClient);
+                ObjectInputStream dataPack = new ObjectInputStream(mySocket.getInputStream());
+                packReceive = (Paquete) dataPack.readObject();
+                nick = packReceive.getNick();
+                ip = packReceive.getIp();
+                msj = packReceive.getMsj();
+                if (!msj.equals("En linea")) {
+                jTxtAreaMsjServer.append("\n" + nick + " mensaje para " + ip);
+                sendDestination(ip, packReceive);
                 mySocket.close();
+                } else {
+                    detectsOnline(mySocket, packReceive);
+                }
             }
-        } catch (IOException e) {
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
 
-    public static void main(String args[]) {
+    private void detectsOnline(Socket mySocket, Paquete packReceive) {
+        ArrayList <String> ipList = new ArrayList<>();
+        InetAddress location = mySocket.getInetAddress();
+        String ipRemote = location.getHostAddress();
+        ipList.add(ipRemote);
+        packReceive.setIpList(ipList);
+        try {
+            for(String ip : ipList){
+            Socket sendIpCustomer = new Socket(ip, 9090);
+            ObjectOutputStream packSend = new ObjectOutputStream(sendIpCustomer.getOutputStream());
+            packSend.writeObject(packReceive);
+            packSend.close();
+            sendIpCustomer.close();
+    }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
+    private void sendDestination(String ip, Paquete packReceive) {
+        try {
+            Socket sendDestination = new Socket(ip, 9090);
+            ObjectOutputStream packReenvio = new ObjectOutputStream(sendDestination.getOutputStream());
+            packReenvio.writeObject(packReceive);
+            sendDestination.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new Servidor().setVisible(true);

@@ -1,10 +1,14 @@
 package Cliente;
 
 import java.awt.Image;
-import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.net.InetAddress;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -16,16 +20,20 @@ import javax.swing.filechooser.FileNameExtensionFilter;
  *
  * @author admin-jean
  */
-public class Cliente extends javax.swing.JFrame {
+public class Cliente extends javax.swing.JFrame implements Runnable {
+
+    private String nick;
 
     public Cliente() {
         initComponents();
         configWindowCliente();
+        initThread();
     }
 
     //Configura el contenido de la ventana
     private void configWindowCliente() {
         inputNick();
+        addWindowListener(new SendOnline());
         setLocationRelativeTo(null);
         jLblViewImg.setText("");
         jBtnSendMsj.setIcon(setIconBtn("/imagenes/send.png", jBtnSendMsj));
@@ -35,10 +43,10 @@ public class Cliente extends javax.swing.JFrame {
         jBtnSendImg.setPressedIcon(setIconPresionado("/imagenes/send.png", jBtnSendImg, 10, 10));
         jBtnUploadImg.setPressedIcon(setIconPresionado("/imagenes/img.png", jBtnUploadImg, 10, 10));
     }
-    
+
     //Pedir nombre del cliente
     private void inputNick() {
-        String nick = JOptionPane.showInputDialog("Nombre: ");
+        nick = JOptionPane.showInputDialog("Nombre: ");
         jLblNick.setText(nick);
     }
 
@@ -50,7 +58,7 @@ public class Cliente extends javax.swing.JFrame {
         ImageIcon icono = new ImageIcon(icon.getImage().getScaledInstance(ancho, alto, Image.SCALE_DEFAULT));
         return icono;
     }
-    
+
     //efecto de presionado 
     private Icon setIconPresionado(String url, JButton boton, int ancho, int altura) {
         ImageIcon icon = new ImageIcon(getClass().getResource(url));
@@ -60,20 +68,36 @@ public class Cliente extends javax.swing.JFrame {
         return icono;
     }
 
+    private void fillComboBxIp(Paquete packReceive, Socket mySocket) {
+        jCbxOnLine.removeAllItems();
+        InetAddress location = mySocket.getInetAddress();
+        String ipRemote = location.getHostAddress();
+        for (String ip : packReceive.getIpList()) {
+            if (!ipRemote.equals(ip)) {
+                jCbxOnLine.addItem(ip);
+            }
+        }
+    }
+
     private void sendMsj() { //Envia msj por socket
-        if (!jTxtMsj.getText().isEmpty()) { //Valida que el campo no esté vacío 
+        if (!jTxtMsj.getText().isEmpty()) { //Valida que el campo no esté vacío
             try {
                 Socket mySocket = new Socket("192.168.56.1", 9999); //Se crea el socket parametros ip server y puerto
-                DataOutputStream outPack = new DataOutputStream(mySocket.getOutputStream()); //Crea canal de transmisión de salida
-                outPack.writeUTF(jTxtMsj.getText());
-                outPack.close();
+                Paquete pack = new Paquete();
+                pack.setNick(jLblNick.getText());
+                pack.setMsj(jTxtMsj.getText());
+                pack.setIp(jCbxOnLine.getSelectedItem().toString());
+                ObjectOutputStream dataPack = new ObjectOutputStream(mySocket.getOutputStream());
+                dataPack.writeObject(pack);
+                mySocket.close();
             } catch (UnknownHostException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            jTxtAreaReceive.append("\n" + jTxtMsj.getText());
+            jTxtMsj.setText("");
         }
-
     }
 
     private void sendImg() {
@@ -84,8 +108,8 @@ public class Cliente extends javax.swing.JFrame {
 
     private void uploadImg() {
         JFileChooser vtn = new JFileChooser();
-        FileNameExtensionFilter fil = new FileNameExtensionFilter("JPG, PNG & GIF", "jpg", "png", "gif");
-        vtn.setFileFilter(fil);
+        FileNameExtensionFilter file = new FileNameExtensionFilter("JPG, PNG & GIF", "jpg", "png", "gif");
+        vtn.setFileFilter(file);
         int i = vtn.showOpenDialog(this);
         if (i == JFileChooser.APPROVE_OPTION) {
             String ruta = vtn.getSelectedFile().getAbsolutePath();
@@ -93,12 +117,35 @@ public class Cliente extends javax.swing.JFrame {
         }
     }
 
+    private void initThread() {
+        Thread thread = new Thread(this);
+        thread.start();
+    }
+
+    private void listenConnection() {
+        try {
+            ServerSocket serverCustomer = new ServerSocket(9090);
+            Socket customer;
+            Paquete packReceive;
+            while (true) {
+                customer = serverCustomer.accept();
+                ObjectInputStream dataPack = new ObjectInputStream(customer.getInputStream());
+                packReceive = (Paquete) dataPack.readObject();
+                if (!packReceive.getMsj().equalsIgnoreCase("En linea")) {
+                    jTxtAreaReceive.append("\n" + packReceive.getNick() + ": " + packReceive.getMsj());
+                } else {
+                    fillComboBxIp(packReceive, customer);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel7 = new javax.swing.JLabel();
-        jCheckBox1 = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jTxtMsj = new javax.swing.JTextField();
@@ -116,10 +163,6 @@ public class Cliente extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jTxtAreaReceive = new javax.swing.JTextArea();
         jLblViewImg = new javax.swing.JLabel();
-
-        jLabel7.setText("jLabel7");
-
-        jCheckBox1.setText("jCheckBox1");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Cliente");
@@ -381,13 +424,11 @@ public class Cliente extends javax.swing.JFrame {
     private javax.swing.JButton jBtnSendMsj;
     private javax.swing.JButton jBtnUploadImg;
     private javax.swing.JComboBox<String> jCbxOnLine;
-    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLblNick;
     private javax.swing.JLabel jLblViewImg;
     private javax.swing.JPanel jPanel1;
@@ -397,4 +438,9 @@ public class Cliente extends javax.swing.JFrame {
     private javax.swing.JTextField jTxtMsj;
     private javax.swing.JTextField jTxtUploadImg;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public void run() {
+        listenConnection();
+    }
 }
