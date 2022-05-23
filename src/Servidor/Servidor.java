@@ -91,7 +91,7 @@ public class Servidor extends javax.swing.JFrame implements Runnable {
                 ip = packReceive.getIp();
                 msj = packReceive.getMsj();
                 if (!msj.equals("En linea")) {
-                jTxtAreaMsjServer.append("\n" + nick + " mensaje para " + ip);
+                jTxtAreaMsjServer.append("\n De" + nick + " mensaje para " + ip);
                 sendDestination(ip, packReceive);
                 mySocket.close();
                 } else {

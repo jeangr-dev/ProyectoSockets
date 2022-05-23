@@ -8,7 +8,6 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -70,19 +69,19 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
 
     private void fillComboBxIp(Paquete packReceive, Socket mySocket) {
         jCbxOnLine.removeAllItems();
-        InetAddress location = mySocket.getInetAddress();
-        String ipRemote = location.getHostAddress();
+        /*InetAddress location = mySocket.getInetAddress();
+        String ipRemote = location.getHostAddress();*/
         for (String ip : packReceive.getIpList()) {
-            if (!ipRemote.equals(ip)) {
-                jCbxOnLine.addItem(ip);
-            }
+            //if (ipRemote.equals(ip)) {
+            jCbxOnLine.addItem(ip);
+            // }
         }
     }
 
     private void sendMsj() { //Envia msj por socket
         if (!jTxtMsj.getText().isEmpty()) { //Valida que el campo no esté vacío
             try {
-                Socket mySocket = new Socket("192.168.56.1", 9999); //Se crea el socket parametros ip server y puerto
+                Socket mySocket = new Socket("192.168.100.66", 9999); //Se crea el socket parametros ip server y puerto
                 Paquete pack = new Paquete();
                 pack.setNick(jLblNick.getText());
                 pack.setMsj(jTxtMsj.getText());
