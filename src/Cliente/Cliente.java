@@ -4,10 +4,12 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.InetAddress;
+//import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -28,12 +30,12 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
         initComponents();
         configWindowCliente();
         initThread();
+        addWindowListener(new SendOnline());
     }
 
     //Configura el contenido de la ventana
     private void configWindowCliente() {
         inputNick();
-        addWindowListener(new SendOnline());
         setLocationRelativeTo(null);
         jLblViewImg.setText("");
         jBtnSendMsj.setIcon(setIconBtn("/imagenes/send.png", jBtnSendMsj));
@@ -68,21 +70,10 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
         return icono;
     }
 
-    private void fillComboBxIp(Paquete packReceive, Socket mySocket) {
-        jCbxOnLine.removeAllItems();
-        /*InetAddress location = mySocket.getInetAddress();
-        String ipRemote = location.getHostAddress();*/
-        for (String ip : packReceive.getIpList()) {
-            //if (ipRemote.equals(ip)) {
-            jCbxOnLine.addItem(ip);
-            // }
-        }
-    }
-
     private void sendMsj() { //Envia msj por socket
         if (!jTxtMsj.getText().isEmpty()) { //Valida que el campo no esté vacío
             try {
-                Socket mySocket = new Socket("10.5.4.76", 9999); //Se crea el socket parametros ip server y puerto
+                Socket mySocket = new Socket("192.168.1.61", 9999); //Se crea el socket parametros ip server y puerto
                 Paquete pack = new Paquete();
                 pack.setNick(jLblNick.getText());
                 pack.setMsj(jTxtMsj.getText());
@@ -95,14 +86,19 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+            jTxtAreaReceive.append("\n" + jTxtMsj.getText());
             jTxtMsj.setText("");
         }
+    }
+
+    private void sendOnline() {
+
     }
 
     private void sendImg() {
         if (!jTxtUploadImg.getText().isEmpty()) {
             try {
-                Socket mySocket = new Socket("10.5.4.76", 9999);
+                Socket mySocket = new Socket("10.5.13.10", 9999);
 
                 OutputStream outputStream = mySocket.getOutputStream(); //devuelve el flujo de salida del socket
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(); //Crea un flujo de salida de bytes
@@ -115,14 +111,14 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
 
                 outputStream.close();
                 mySocket.close();
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             jTxtUploadImg.setText(null);
         }
     }
 
-    private void loadImage(String ruta){
+    private void loadImage(String ruta) {
         ImageIcon image = new ImageIcon(ruta);
         jLblViewImg.setIcon(new ImageIcon(image.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH)));
         jLblViewImg.repaint();
@@ -155,19 +151,37 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
                 packReceive = (Paquete) dataPack.readObject();
                 if (!packReceive.getMsj().equalsIgnoreCase("En linea")) {
                     jTxtAreaReceive.append("\n" + packReceive.getNick() + ": " + packReceive.getMsj());
-                    loadImage(packReceive.getMsj());
                 } else {
-                    fillComboBxIp(packReceive, customer);
+                    fillComboBxIp(packReceive);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+
+        }
+    }
+
+    private void fillComboBxIp(Paquete packReceive) {
+        try {
+            InetAddress getIpLocal = InetAddress.getLocalHost();
+            String ipLocal = getIpLocal.getHostAddress();
+            ArrayList<String> arrayIp = new ArrayList<>();
+            jCbxOnLine.removeAllItems();
+            arrayIp = packReceive.getIpList();
+            for (String ip : arrayIp) {
+                if (!ipLocal.equals(ip)) {
+                    jCbxOnLine.addItem(ip);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
 
-    private void enviarImagen() {
+    /*private void enviarImagen() {
         try {
-            Socket mySocket = new Socket("10.5.4.76",9999);
+            Socket mySocket = new Socket("10.5.13.10",9999);
             Paquete pack = new Paquete();
             pack.setNick(jLblNick.getText());
             pack.setMsj(jTxtUploadImg.getText());
@@ -178,8 +192,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
+    }*/
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
