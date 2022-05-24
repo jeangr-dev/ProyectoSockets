@@ -1,13 +1,14 @@
 package Cliente;
 
 import java.awt.Image;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import javax.imageio.ImageIO;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -81,7 +82,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
     private void sendMsj() { //Envia msj por socket
         if (!jTxtMsj.getText().isEmpty()) { //Valida que el campo no esté vacío
             try {
-                Socket mySocket = new Socket("192.168.100.66", 9999); //Se crea el socket parametros ip server y puerto
+                Socket mySocket = new Socket("10.5.4.76", 9999); //Se crea el socket parametros ip server y puerto
                 Paquete pack = new Paquete();
                 pack.setNick(jLblNick.getText());
                 pack.setMsj(jTxtMsj.getText());
@@ -94,15 +95,37 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            jTxtAreaReceive.append("\n" + jTxtMsj.getText());
             jTxtMsj.setText("");
         }
     }
 
     private void sendImg() {
         if (!jTxtUploadImg.getText().isEmpty()) {
+            try {
+                Socket mySocket = new Socket("10.5.4.76", 9999);
 
+                OutputStream outputStream = mySocket.getOutputStream(); //devuelve el flujo de salida del socket
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(); //Crea un flujo de salida de bytes
+
+                BufferedImage image = ImageIO.read(new File(jTxtUploadImg.getText()));
+                ImageIO.write(image, "jpg", byteArrayOutputStream); //Escribe la imagen en el flujo de salida de bytes
+
+                byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array(); //Crea un array de bytes con el tamaño de la imagen
+                outputStream.write(byteArrayOutputStream.toByteArray()); //recuperamos los datos
+
+                outputStream.close();
+                mySocket.close();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+            jTxtUploadImg.setText(null);
         }
+    }
+
+    private void loadImage(String ruta){
+        ImageIcon image = new ImageIcon(ruta);
+        jLblViewImg.setIcon(new ImageIcon(image.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH)));
+        jLblViewImg.repaint();
     }
 
     private void uploadImg() {
@@ -132,10 +155,26 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
                 packReceive = (Paquete) dataPack.readObject();
                 if (!packReceive.getMsj().equalsIgnoreCase("En linea")) {
                     jTxtAreaReceive.append("\n" + packReceive.getNick() + ": " + packReceive.getMsj());
+                    loadImage(packReceive.getMsj());
                 } else {
                     fillComboBxIp(packReceive, customer);
                 }
             }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void enviarImagen() {
+        try {
+            Socket mySocket = new Socket("10.5.4.76",9999);
+            Paquete pack = new Paquete();
+            pack.setNick(jLblNick.getText());
+            pack.setMsj(jTxtUploadImg.getText());
+            pack.setIp(jCbxOnLine.getSelectedItem().toString());
+            ObjectOutputStream dataPack = new ObjectOutputStream(mySocket.getOutputStream());
+            dataPack.writeObject(pack);
+            mySocket.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -352,7 +391,8 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jBtnSendImgActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSendImgActionPerformed
-        // TODO add your handling code here:
+        //sendImg();
+        //enviarImagen();
     }//GEN-LAST:event_jBtnSendImgActionPerformed
 
     private void jBtnUploadImgActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnUploadImgActionPerformed
