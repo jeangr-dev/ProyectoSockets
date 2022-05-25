@@ -71,24 +71,26 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
 
     private void sendMsj() { //Envia msj por socket
             try {
-                Socket mySocket = new Socket("192.168.1.61", 9999); //Se crea el socket parametros ip server y puerto
+                Socket mySocket = new Socket("192.168.1.41", 9999); //Se crea el socket parametros ip server y puerto
                 Paquete pack = new Paquete();
                 pack.setNick(jLblNick.getText());
                 pack.setMsj(jTxtMsj.getText());
                 pack.setIp(jCbxOnLine.getSelectedItem().toString());
+                ObjectOutputStream dataPack = new ObjectOutputStream(mySocket.getOutputStream());
                 if (!jTxtMsj.getText().isEmpty()) { //Valida que el campo no esté vacío
                 pack.setMsj(jTxtMsj.getText());
                 pack.setImagen(null);
+                dataPack.writeObject(pack);
+
             } else if (!jTxtUploadImg.getText().isEmpty()) {
                 pack.setMsj("Imagen");
                 BufferedImage bufferedImage = ImageIO.read(new File(jTxtUploadImg.getText()));
                 ByteArrayOutputStream salidaImagen = new ByteArrayOutputStream();
                 ImageIO.write(bufferedImage, "png", salidaImagen);
                 byte[] bytesImagen = salidaImagen.toByteArray();
+                dataPack.writeObject(pack);
                 pack.setImagen(bytesImagen);
             }
-                ObjectOutputStream dataPack = new ObjectOutputStream(mySocket.getOutputStream());
-                dataPack.writeObject(pack);
                 mySocket.close();
             } catch (UnknownHostException e) {
                 e.printStackTrace();
@@ -101,7 +103,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
 
     private void loadImage(String ruta) {
         ImageIcon image = new ImageIcon(ruta);
-        jLblViewImg.setIcon(new ImageIcon(image.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH)));
+        jLblViewImg.setIcon(new ImageIcon(image.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH)));
         jLblViewImg.repaint();
     }
 
@@ -137,10 +139,11 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
                         byte[] bytesImagen = (byte[]) (packReceive.getImagen());
                         ByteArrayInputStream entradaImagen = new ByteArrayInputStream(bytesImagen);
                         BufferedImage bufferedImage = ImageIO.read(entradaImagen);
-                        FileOutputStream out = new FileOutputStream("imagen.png");
+                        String nombre = JOptionPane.showInputDialog(null, "Con que nombre quiere guardar la imagen?");
+                        FileOutputStream out = new FileOutputStream(nombre + ".png");
                         // esbribe la imagen a fichero
                         ImageIO.write(bufferedImage, "png", out);
-                        loadImage("C:\\Users\\Guevara\\IdeaProjects\\ProyectoSockets\\imagen.png");
+                        loadImage(nombre + ".png");
                     }
                 } else {
                     fillComboBxIp(packReceive);
