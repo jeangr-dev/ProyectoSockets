@@ -31,6 +31,7 @@ public class Servidor extends javax.swing.JFrame implements Runnable {
 
     private void configWindowServer() {
         setLocationRelativeTo(null);
+        jTxtAreaMsjServer.enable(false);
     }
 
     @SuppressWarnings("unchecked")

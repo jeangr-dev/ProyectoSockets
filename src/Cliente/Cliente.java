@@ -36,6 +36,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
         inputNick();
         setLocationRelativeTo(null);
         jLblViewImg.setText("");
+        jTxtAreaReceive.enable(false);
         jBtnSendMsj.setIcon(setIconBtn("/imagenes/send.png", jBtnSendMsj));
         jBtnSendImg.setIcon(setIconBtn("/imagenes/send.png", jBtnSendImg));
         jBtnUploadImg.setIcon(setIconBtn("/imagenes/img.png", jBtnUploadImg));
@@ -69,9 +70,8 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
     }
 
     private void sendMsj() { //Envia msj por socket
-        if (!jTxtMsj.getText().isEmpty()) { //Valida que el campo no esté vacío
             try {
-                Socket mySocket = new Socket("192.168.1.34", 9999); //Se crea el socket parametros ip server y puerto
+                Socket mySocket = new Socket("192.168.1.61", 9999); //Se crea el socket parametros ip server y puerto
                 Paquete pack = new Paquete();
                 pack.setNick(jLblNick.getText());
                 pack.setMsj(jTxtMsj.getText());
@@ -98,7 +98,6 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
             jTxtAreaReceive.append("\n" + jTxtMsj.getText());
             jTxtMsj.setText("");
         }
-    }
 
     private void loadImage(String ruta) {
         ImageIcon image = new ImageIcon(ruta);
@@ -167,23 +166,8 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
-    /*private void enviarImagen() {
-        try {
-            Socket mySocket = new Socket("10.5.13.10",9999);
-            Paquete pack = new Paquete();
-            pack.setNick(jLblNick.getText());
-            pack.setMsj(jTxtUploadImg.getText());
-            pack.setIp(jCbxOnLine.getSelectedItem().toString());
-            ObjectOutputStream dataPack = new ObjectOutputStream(mySocket.getOutputStream());
-            dataPack.writeObject(pack);
-            mySocket.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }*/
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -396,6 +380,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
 
     private void jBtnSendImgActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSendImgActionPerformed
         sendMsj();
+        jTxtUploadImg.setText("");
     }//GEN-LAST:event_jBtnSendImgActionPerformed
 
     private void jBtnUploadImgActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnUploadImgActionPerformed
