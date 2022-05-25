@@ -4,11 +4,9 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.InetAddress;
-//import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import javax.imageio.ImageIO;
 import javax.swing.Icon;
@@ -73,11 +71,22 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
     private void sendMsj() { //Envia msj por socket
         if (!jTxtMsj.getText().isEmpty()) { //Valida que el campo no esté vacío
             try {
-                Socket mySocket = new Socket("192.168.1.61", 9999); //Se crea el socket parametros ip server y puerto
+                Socket mySocket = new Socket("192.168.1.34", 9999); //Se crea el socket parametros ip server y puerto
                 Paquete pack = new Paquete();
                 pack.setNick(jLblNick.getText());
                 pack.setMsj(jTxtMsj.getText());
                 pack.setIp(jCbxOnLine.getSelectedItem().toString());
+                if (!jTxtMsj.getText().isEmpty()) { //Valida que el campo no esté vacío
+                pack.setMsj(jTxtMsj.getText());
+                pack.setImagen(null);
+            } else if (!jTxtUploadImg.getText().isEmpty()) {
+                pack.setMsj("Imagen");
+                BufferedImage bufferedImage = ImageIO.read(new File(jTxtUploadImg.getText()));
+                ByteArrayOutputStream salidaImagen = new ByteArrayOutputStream();
+                ImageIO.write(bufferedImage, "png", salidaImagen);
+                byte[] bytesImagen = salidaImagen.toByteArray();
+                pack.setImagen(bytesImagen);
+            }
                 ObjectOutputStream dataPack = new ObjectOutputStream(mySocket.getOutputStream());
                 dataPack.writeObject(pack);
                 mySocket.close();
@@ -88,33 +97,6 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
             }
             jTxtAreaReceive.append("\n" + jTxtMsj.getText());
             jTxtMsj.setText("");
-        }
-    }
-
-    private void sendOnline() {
-
-    }
-
-    private void sendImg() {
-        if (!jTxtUploadImg.getText().isEmpty()) {
-            try {
-                Socket mySocket = new Socket("10.5.13.10", 9999);
-
-                OutputStream outputStream = mySocket.getOutputStream(); //devuelve el flujo de salida del socket
-                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(); //Crea un flujo de salida de bytes
-
-                BufferedImage image = ImageIO.read(new File(jTxtUploadImg.getText()));
-                ImageIO.write(image, "jpg", byteArrayOutputStream); //Escribe la imagen en el flujo de salida de bytes
-
-                byte[] size = ByteBuffer.allocate(4).putInt(byteArrayOutputStream.size()).array(); //Crea un array de bytes con el tamaño de la imagen
-                outputStream.write(byteArrayOutputStream.toByteArray()); //recuperamos los datos
-
-                outputStream.close();
-                mySocket.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            jTxtUploadImg.setText(null);
         }
     }
 
@@ -151,13 +133,22 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
                 packReceive = (Paquete) dataPack.readObject();
                 if (!packReceive.getMsj().equalsIgnoreCase("En linea")) {
                     jTxtAreaReceive.append("\n" + packReceive.getNick() + ": " + packReceive.getMsj());
+                    if (packReceive.getMsj().equals("Imagen")) {
+                        System.out.println(packReceive.getImagen());
+                        byte[] bytesImagen = (byte[]) (packReceive.getImagen());
+                        ByteArrayInputStream entradaImagen = new ByteArrayInputStream(bytesImagen);
+                        BufferedImage bufferedImage = ImageIO.read(entradaImagen);
+                        FileOutputStream out = new FileOutputStream("imagen.png");
+                        // esbribe la imagen a fichero
+                        ImageIO.write(bufferedImage, "png", out);
+                        loadImage("C:\\Users\\Guevara\\IdeaProjects\\ProyectoSockets\\imagen.png");
+                    }
                 } else {
                     fillComboBxIp(packReceive);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-
         }
     }
 
@@ -404,8 +395,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jBtnSendImgActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSendImgActionPerformed
-        //sendImg();
-        //enviarImagen();
+        sendMsj();
     }//GEN-LAST:event_jBtnSendImgActionPerformed
 
     private void jBtnUploadImgActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnUploadImgActionPerformed

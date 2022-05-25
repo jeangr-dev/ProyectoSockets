@@ -94,37 +94,15 @@ public class Servidor extends javax.swing.JFrame implements Runnable {
                 ip = packReceive.getIp();
                 msj = packReceive.getMsj();
                 if (!msj.equals("En linea")) {
-                    jTxtAreaMsjServer.append("\nDe " + nick + ": " + msj + " -→  mensaje para " + ip);
-                    sendDestination(ip, packReceive);
-                    mySocket.close();
+                jTxtAreaMsjServer.append("\n De " + nick + ": "+ msj + " -→  mensaje para " + ip);
+                sendDestination(ip, packReceive);
+                mySocket.close();
                 } else {
                     detectsOnline(mySocket, packReceive);
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
-        }
-    }
-
-    private void sendImage(String nick, String ruta, String ip) {
-        try {
-            ServerSocket server = new ServerSocket(9090); //establecemos el puerto
-            Socket socket = server.accept(); // ponemos el socket a la eschucha
-
-            InputStream inputStream = socket.getInputStream(); //devuelve el flujo de entrada para el socket
-
-            byte[] imageArray = new byte[62100]; //creamos un array de bytes para la imagen de tamaño 62100
-            inputStream.read(imageArray); //leemos el array de bytes de la imagen
-
-            BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageArray)); //creamos un objeto de tipo BufferedImage con la imagen leida
-            jTxtAreaMsjServer.append("\n De " + nick + ": Imagen Recibida " + image.getHeight() + " x " + image.getWidth() + " -→  mensaje para " + ip);
-            ImageIO.write(image, "jpg", new File("C://Users//" + nick + "//Pictures//image.jpg")); //guardamos la imagen en el escritorio
-
-            inputStream.close();
-            socket.close();
-            server.close();
-        } catch (IOException ex) {
-            ex.printStackTrace();
         }
     }
 
