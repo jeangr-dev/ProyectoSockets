@@ -3,7 +3,6 @@ package Servidor;
 import Cliente.Paquete;
 
 import javax.imageio.ImageIO;
-import javax.swing.*;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.InetAddress;
@@ -17,6 +16,8 @@ import java.util.ArrayList;
  */
 public class Servidor extends javax.swing.JFrame implements Runnable {
 
+    private ArrayList<String> ipList = new ArrayList<>();
+    
     public Servidor() {
         initComponents();
         configWindowServer();
@@ -30,6 +31,7 @@ public class Servidor extends javax.swing.JFrame implements Runnable {
 
     private void configWindowServer() {
         setLocationRelativeTo(null);
+        jTxtAreaMsjServer.enable(false);
     }
 
     @SuppressWarnings("unchecked")
@@ -105,42 +107,20 @@ public class Servidor extends javax.swing.JFrame implements Runnable {
         }
     }
 
-    private void sendImage(String nick, String ruta, String ip){
-        try {
-            ServerSocket server = new ServerSocket(9999); //establecemos el puerto
-            Socket socket = server.accept(); // ponemos el socket a la eschucha
-
-            InputStream inputStream = socket.getInputStream(); //devuelve el flujo de entrada para el socket
-
-            byte[] imageArray = new byte[62100]; //creamos un array de bytes para la imagen de tamaño 62100
-            inputStream.read(imageArray); //leemos el array de bytes de la imagen
-
-            BufferedImage image = ImageIO.read(new ByteArrayInputStream(imageArray)); //creamos un objeto de tipo BufferedImage con la imagen leida
-            jTxtAreaMsjServer.append("\n De " + nick + ": Imagen Recibida "+ image.getHeight() + " x " + image.getWidth()+ " -→  mensaje para " + ip);
-            ImageIO.write(image, "jpg", new File("C://Users//" + nick + "//Pictures//image.jpg")); //guardamos la imagen en el escritorio
-
-            inputStream.close();
-            socket.close();
-            server.close();
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
     private void detectsOnline(Socket mySocket, Paquete packReceive) {
-        ArrayList <String> ipList = new ArrayList<>();
         InetAddress location = mySocket.getInetAddress();
         String ipRemote = location.getHostAddress();
         ipList.add(ipRemote);
         packReceive.setIpList(ipList);
+        jTxtAreaMsjServer.append("\nCliente en linea con IP: " + ipRemote);
         try {
-            for(String ip : ipList){
-            Socket sendIpCustomer = new Socket(ip, 9090);
-            ObjectOutputStream packSend = new ObjectOutputStream(sendIpCustomer.getOutputStream());
-            packSend.writeObject(packReceive);
-            packSend.close();
-            sendIpCustomer.close();
-    }
+            for (String ip : ipList) {
+                Socket sendIpCustomer = new Socket(ip, 9090);
+                ObjectOutputStream packSend = new ObjectOutputStream(sendIpCustomer.getOutputStream());
+                packSend.writeObject(packReceive);
+                packSend.close();
+                sendIpCustomer.close();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -152,6 +132,7 @@ public class Servidor extends javax.swing.JFrame implements Runnable {
             ObjectOutputStream packReenvio = new ObjectOutputStream(sendDestination.getOutputStream());
             packReenvio.writeObject(packReceive);
             sendDestination.close();
+            packReenvio.close();
         } catch (IOException e) {
             e.printStackTrace();
         }

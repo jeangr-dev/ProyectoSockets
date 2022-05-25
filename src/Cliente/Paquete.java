@@ -1,4 +1,3 @@
-
 package Cliente;
 
 import java.io.Serializable;
@@ -8,10 +7,11 @@ import java.util.ArrayList;
  *
  * @author admin-jean
  */
-public class Paquete implements Serializable{
-    
+public class Paquete implements Serializable {
+
     private String nick, ip, msj;
-    private ArrayList <String> ipList;
+    private Object imagen;
+    private ArrayList<String> ipList;
 
     public ArrayList<String> getIpList() {
         return ipList;
@@ -45,4 +45,11 @@ public class Paquete implements Serializable{
         this.msj = msj;
     }
 
+    public Object getImagen() {
+        return imagen;
+    }
+
+    public void setImagen(Object imagen) {
+        this.imagen = imagen;
+    }
 }
