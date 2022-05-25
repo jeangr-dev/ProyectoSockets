@@ -71,7 +71,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
 
     private void sendPack() { //Envia paquete por socket
         try {
-            Socket mySocket = new Socket("192.168.1.61", 9999); //Se crea el socket parametros ip server y puerto
+            Socket mySocket = new Socket("192.168.5.35", 9999); //Se crea el socket parametros ip server y puerto
             Paquete pack = new Paquete();
             pack.setNick(jLblNick.getText());
             pack.setMsj(jTxtMsj.getText());
