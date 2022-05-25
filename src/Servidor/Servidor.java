@@ -1,9 +1,6 @@
 package Servidor;
 
 import Cliente.Paquete;
-
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;

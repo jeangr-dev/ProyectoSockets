@@ -28,12 +28,12 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
         initComponents();
         configWindowCliente();
         initThread();
-        addWindowListener(new SendOnline());
     }
 
     //Configura el contenido de la ventana
     private void configWindowCliente() {
         inputNick();
+        addWindowListener(new SendOnline());
         setLocationRelativeTo(null);
         jLblViewImg.setText("");
         jTxtAreaReceive.enable(false);
@@ -69,15 +69,15 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
         return icono;
     }
 
-    private void sendMsj() { //Envia msj por socket
-            try {
-                Socket mySocket = new Socket("192.168.1.41", 9999); //Se crea el socket parametros ip server y puerto
-                Paquete pack = new Paquete();
-                pack.setNick(jLblNick.getText());
-                pack.setMsj(jTxtMsj.getText());
-                pack.setIp(jCbxOnLine.getSelectedItem().toString());
-                ObjectOutputStream dataPack = new ObjectOutputStream(mySocket.getOutputStream());
-                if (!jTxtMsj.getText().isEmpty()) { //Valida que el campo no esté vacío
+    private void sendPack() { //Envia paquete por socket
+        try {
+            Socket mySocket = new Socket("192.168.1.61", 9999); //Se crea el socket parametros ip server y puerto
+            Paquete pack = new Paquete();
+            pack.setNick(jLblNick.getText());
+            pack.setMsj(jTxtMsj.getText());
+            pack.setIp(jCbxOnLine.getSelectedItem().toString());
+            ObjectOutputStream dataPack = new ObjectOutputStream(mySocket.getOutputStream());
+            if (!jTxtMsj.getText().isEmpty()) { //Valida que el campo no esté vacío
                 pack.setMsj(jTxtMsj.getText());
                 pack.setImagen(null);
                 dataPack.writeObject(pack);
@@ -88,25 +88,27 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
                 ByteArrayOutputStream salidaImagen = new ByteArrayOutputStream();
                 ImageIO.write(bufferedImage, "png", salidaImagen);
                 byte[] bytesImagen = salidaImagen.toByteArray();
-                dataPack.writeObject(pack);
                 pack.setImagen(bytesImagen);
+                dataPack.writeObject(pack);
             }
-                mySocket.close();
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            jTxtAreaReceive.append("\n" + jTxtMsj.getText());
-            jTxtMsj.setText("");
+            mySocket.close();
+        } catch (UnknownHostException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+        jTxtAreaReceive.append("\n" + jTxtMsj.getText());
+        jTxtMsj.setText("");
+    }
 
+    //Setea el jLbl de la imagen
     private void loadImage(String ruta) {
         ImageIcon image = new ImageIcon(ruta);
         jLblViewImg.setIcon(new ImageIcon(image.getImage().getScaledInstance(200, 200, Image.SCALE_SMOOTH)));
         jLblViewImg.repaint();
     }
 
+    //Abre un explorador de archivos del SO y carga la ruta de la imagen para ser enviada
     private void uploadImg() {
         JFileChooser vtn = new JFileChooser();
         FileNameExtensionFilter file = new FileNameExtensionFilter("JPG, PNG & GIF", "jpg", "png", "gif");
@@ -118,11 +120,13 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
         }
     }
 
+    // Iniciar hilo
     private void initThread() {
         Thread thread = new Thread(this);
         thread.start();
     }
 
+    // El cliente permanece a la escuchar del servidor para recibir paquetes por el puerto 9090
     private void listenConnection() {
         try {
             ServerSocket serverCustomer = new ServerSocket(9090);
@@ -154,6 +158,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
         }
     }
 
+    // Llenar el combo box de los clientes en linea
     private void fillComboBxIp(Paquete packReceive) {
         try {
             InetAddress getIpLocal = InetAddress.getLocalHost();
@@ -162,7 +167,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
             jCbxOnLine.removeAllItems();
             arrayIp = packReceive.getIpList();
             for (String ip : arrayIp) {
-                if (!ipLocal.equals(ip)) {
+                if (!ipLocal.equals(ip)) { //Valida que no muestre la propia ip del cliente
                     jCbxOnLine.addItem(ip);
                 }
             }
@@ -382,7 +387,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jBtnSendImgActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSendImgActionPerformed
-        sendMsj();
+        sendPack();
         jTxtUploadImg.setText("");
     }//GEN-LAST:event_jBtnSendImgActionPerformed
 
@@ -391,7 +396,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
     }//GEN-LAST:event_jBtnUploadImgActionPerformed
 
     private void jBtnSendMsjActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnSendMsjActionPerformed
-        sendMsj();
+        sendPack();
     }//GEN-LAST:event_jBtnSendMsjActionPerformed
 
     private void jCbxOnLineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCbxOnLineActionPerformed
