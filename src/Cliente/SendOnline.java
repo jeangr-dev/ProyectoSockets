@@ -14,7 +14,7 @@ public class SendOnline extends WindowAdapter {
     @Override
     public void windowOpened(WindowEvent e) {
         try {
-            Socket mySocket = new Socket("192.168.5.35", 9999);
+            Socket mySocket = new Socket("192.168.100.200", 9999);
             Paquete data = new Paquete();
             data.setMsj("En linea");
             ObjectOutputStream dataPack = new ObjectOutputStream(mySocket.getOutputStream());

@@ -71,7 +71,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
 
     private void sendPack() { //Envia paquete por socket
         try {
-            Socket mySocket = new Socket("192.168.5.35", 9999); //Se crea el socket parametros ip server y puerto
+            Socket mySocket = new Socket("192.168.100.200", 9999); //Se crea el socket parametros ip server y puerto
             Paquete pack = new Paquete();
             pack.setNick(jLblNick.getText());
             pack.setMsj(jTxtMsj.getText());
@@ -143,11 +143,18 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
                         byte[] bytesImagen = (byte[]) (packReceive.getImagen());
                         ByteArrayInputStream entradaImagen = new ByteArrayInputStream(bytesImagen);
                         BufferedImage bufferedImage = ImageIO.read(entradaImagen);
-                        String nombre = JOptionPane.showInputDialog(null, "Con que nombre quiere guardar la imagen?");
-                        FileOutputStream out = new FileOutputStream(nombre + ".png");
+                        String nameImg = JOptionPane.showInputDialog(null, "Con que nombre quiere guardar la imagen?");
+                        if (nameImg != null) {
+                            FileOutputStream out = new FileOutputStream(nameImg + ".png");
+                            ImageIO.write(bufferedImage, "png", out);
+                            loadImage(nameImg + ".png");
+                        }else{
+                            JOptionPane.showMessageDialog(null, "No se guardo la imagen");
+                        }
+                        FileOutputStream out = new FileOutputStream(nameImg + ".png");
                         // esbribe la imagen a fichero
                         ImageIO.write(bufferedImage, "png", out);
-                        loadImage(nombre + ".png");
+                        loadImage(nameImg + ".png");
                     }
                 } else {
                     fillComboBxIp(packReceive);
