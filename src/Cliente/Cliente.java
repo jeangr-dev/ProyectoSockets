@@ -1,5 +1,6 @@
 package Cliente;
 
+import com.jtattoo.plaf.aluminium.AluminiumLookAndFeel;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.*;
@@ -14,6 +15,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
@@ -47,8 +50,15 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
 
     //Pedir nombre del cliente
     private void inputNick() {
-        nick = JOptionPane.showInputDialog("Nombre: ");
-        jLblNick.setText(nick);
+        try {
+            nick = JOptionPane.showInputDialog("Nombre: ");
+            if (nick.isEmpty()) {
+                System.exit(0);
+            }
+            jLblNick.setText(nick);
+        } catch (Exception e) {
+            System.exit(0);
+        }
     }
 
     //Agregar icono al boton
@@ -71,7 +81,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
 
     private void sendPack() { //Envia paquete por socket
         try {
-            Socket mySocket = new Socket("192.168.100.200", 9999); //Se crea el socket parametros ip server y puerto
+            Socket mySocket = new Socket("10.5.24.66", 9999); //Se crea el socket parametros ip server y puerto
             Paquete pack = new Paquete();
             pack.setNick(jLblNick.getText());
             pack.setMsj(jTxtMsj.getText());
@@ -148,7 +158,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
                             FileOutputStream out = new FileOutputStream(nameImg + ".png");
                             ImageIO.write(bufferedImage, "png", out);
                             loadImage(nameImg + ".png");
-                        }else{
+                        } else {
                             JOptionPane.showMessageDialog(null, "No se guardo la imagen");
                         }
                         FileOutputStream out = new FileOutputStream(nameImg + ".png");
@@ -456,7 +466,12 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Cliente().setVisible(true);
+                try {
+                    UIManager.setLookAndFeel(new AluminiumLookAndFeel());
+                    new Cliente().setVisible(true);
+                } catch (UnsupportedLookAndFeelException ex) {
+                    ex.printStackTrace();
+                }
             }
         });
     }

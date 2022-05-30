@@ -1,11 +1,16 @@
 package Servidor;
 
 import Cliente.Paquete;
+import com.jtattoo.plaf.aluminium.AluminiumLookAndFeel;
 import java.io.*;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 /**
  *
@@ -139,7 +144,12 @@ public class Servidor extends javax.swing.JFrame implements Runnable {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new Servidor().setVisible(true);
+                try {
+                    UIManager.setLookAndFeel(new AluminiumLookAndFeel());
+                    new Servidor().setVisible(true);
+                } catch (UnsupportedLookAndFeelException ex) {
+                    Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
     }
