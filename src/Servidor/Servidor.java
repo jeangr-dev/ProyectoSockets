@@ -19,7 +19,7 @@ import javax.swing.UnsupportedLookAndFeelException;
 public class Servidor extends javax.swing.JFrame implements Runnable {
 
     private ArrayList<String> ipList = new ArrayList<>();
-    
+
     public Servidor() {
         initComponents();
         configWindowServer();
@@ -97,9 +97,9 @@ public class Servidor extends javax.swing.JFrame implements Runnable {
                 ip = packReceive.getIp();
                 msj = packReceive.getMsj();
                 if (!msj.equals("En linea")) {
-                jTxtAreaMsjServer.append("\n De " + nick + ": "+ msj + " -→  mensaje para " + ip);
-                sendDestination(ip, packReceive);
-                mySocket.close();
+                    jTxtAreaMsjServer.append("\n De " + nick + ": " + msj + " -→  mensaje para " + ip);
+                    sendDestination(ip, packReceive);
+                    mySocket.close();
                 } else {
                     detectsOnline(mySocket, packReceive);
                 }
@@ -144,12 +144,9 @@ public class Servidor extends javax.swing.JFrame implements Runnable {
     public static void main(String args[]) {
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                try {
-                    UIManager.setLookAndFeel(new AluminiumLookAndFeel());
-                    new Servidor().setVisible(true);
-                } catch (UnsupportedLookAndFeelException ex) {
-                    Logger.getLogger(Servidor.class.getName()).log(Level.SEVERE, null, ex);
-                }
+
+                new Servidor().setVisible(true);
+
             }
         });
     }

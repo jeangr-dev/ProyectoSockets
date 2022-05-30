@@ -81,7 +81,7 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
 
     private void sendPack() { //Envia paquete por socket
         try {
-            Socket mySocket = new Socket("10.5.24.66", 9999); //Se crea el socket parametros ip server y puerto
+            Socket mySocket = new Socket("192.168.55.35", 9999); //Se crea el socket parametros ip server y puerto
             Paquete pack = new Paquete();
             pack.setNick(jLblNick.getText());
             pack.setMsj(jTxtMsj.getText());
@@ -161,10 +161,6 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
                         } else {
                             JOptionPane.showMessageDialog(null, "No se guardo la imagen");
                         }
-                        FileOutputStream out = new FileOutputStream(nameImg + ".png");
-                        // esbribe la imagen a fichero
-                        ImageIO.write(bufferedImage, "png", out);
-                        loadImage(nameImg + ".png");
                     }
                 } else {
                     fillComboBxIp(packReceive);
@@ -466,12 +462,8 @@ public class Cliente extends javax.swing.JFrame implements Runnable {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                try {
-                    UIManager.setLookAndFeel(new AluminiumLookAndFeel());
-                    new Cliente().setVisible(true);
-                } catch (UnsupportedLookAndFeelException ex) {
-                    ex.printStackTrace();
-                }
+                new Cliente().setVisible(true);
+
             }
         });
     }
